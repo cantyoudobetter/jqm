@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html manifest="observe.appcache">
+    <head>
+        <style>
+            /*customization for the photo when it is displayed on the screen */
+            #PreviewImage {
+            width: 80%; max-width: 300px;
+            }
+            #PreviewImage img {
+            width: 100%;
+            }
+            .HiddenFile {
+            width: 0px;
+            height: 0px;
+            overflow: hidden;
+            }
+            /*customization for each pay and headers */
+            .ui-page .ui-header {
+            background: #87B87F !important;
+            }
+            .ui-header .ui-title {
+            overflow: visible !important;
+            white-space: normal !important;
+            }
+            .ui-header .ui-title {
+            margin-right:10% !important;
+            margin-left:10% !important;
+            }
+            /*customization for positive negative flip switch.  Get the labels to fit */
+            .custom-size-flipswitch.ui-flipswitch .ui-btn.ui-flipswitch-on {
+            text-indent: -5.9em;
+            }
+            .custom-size-flipswitch.ui-flipswitch .ui-flipswitch-off {
+            text-indent: 0.5em;
+            }
+            .custom-size-flipswitch.ui-flipswitch {
+            width: 8.875em;
+            }
+            .custom-size-flipswitch.ui-flipswitch.ui-flipswitch-active {
+            padding-left: 7em;
+            width: 1.875em;
+            }
+            @media (min-width: 28em) {
+            .ui-field-contain > label + .custom-size-flipswitch.ui-flipswitch {
+            width: 1.875em;
+            }
+            }
+            /*customization for slider control */
+            .sliderBackColor{
+            height: 100%;
+            width: 33.33%;    
+            float: left;
+            color: white;
+            text-align: center;
+            font-size: 10px;
+            font-weight: normal;
+            text-shadow: 0px 1px 2px #333;
+            }
+            .red { background-color: #FF3D3D;}
+            .green { background-color: #B2B812;}
+            .orange { background-color: #FF952B;}
+            .ui-slider-track > div.sliderBackColor:first-child{
+            border-top-left-radius: 0.3125em;
+            border-bottom-left-radius: 0.3125em;
+            }
+            .ui-slider-track > div.sliderBackColor:last-of-type{
+            border-top-right-radius: 0.3125em;
+            border-bottom-right-radius: 0.3125em;   
+            }
+            .full-width-slider input {
+            display: none;
+            }
+            .full-width-slider .ui-slider-track {
+            margin-left: 15px;
+            }
+            /* customization for HR tag */
+            hr {
+            border: 0;
+            height: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            }
+
+</style>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+        <script src="http://code.jquery.com/jquery-2.1.3.min.js"></script>
+        <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+        <script src="http://intridea.github.io/sketch.js/lib/sketch.min.js"></script>
+        <script>
+            //Stylize the background of the slider control 
+            $(document).on("pagecreate", "#MainPageView", function(){
+
+            var colorback  = '<div class="sliderBackColor green">Low</div>';
+                colorback += '<div class="sliderBackColor orange">Medium</div>';
+                colorback += '<div class="sliderBackColor red">High</div>';
+    
+            $("#RatingSlider .ui-slider-track").prepend(colorback);
+            });
+        </script>
+    </head>
+    <body>
+        <div data-role="page" id="MainPageView" data-theme="a">
+            <div data-role="header" data-position="fixed">
+                <h1>Observations</h1>
+                <a href="#ProfilePageView" data-icon="user" data-role="button" data-transition="flip" class="ui-btn-right">Profile</a>
+            </div>
+            <div data-role="main" class="ui-content">
+                <form method="post" action="">
+                    <div class="ui-field-contain" style="border:0px">
+                        <label class="normal" for="JobName">Job: (required)</label>
+                        <a href="#JobListView" name="JobName" data-role="button" data-transition="slide">Select a Job</a>
+                    </div>
+                    <div class="ui-grid-a">
+                        <div class="ui-block-a" style="padding-right:2px">
+                            <label for="DateInput">Date: (required)</label>
+                            <input name="DateInput" type="date" data-role="date" data-inline="true">
+                        </div>
+                        <div class="ui-block-b" style="padding-left:2px">
+                            <label for="TimeInput">Time: (required)</label>
+                            <input name="TimeInput" type="time" data-role="time" data-inline="true">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="containing-element">
+                        <label for="PosNegSwitch">Is this a negative or positive observation?:</label>
+                        <input type="checkbox" data-role="flipswitch" name="PosNegSwitch" id="PosNegSwitch" data-on-text="Postive" data-off-text="Negative" data-wrapper-class="custom-size-flipswitch">                         
+                        <label for="ObservationText">Describe what you saw: (required)</label>
+                        <textarea name="ObservationText" id="Observationtext"></textarea>
+                    </div>
+                    <hr>
+                    <label for="CameraCapture">Attach a Photo:</label>
+                    <button name="CameraCapture" id="ChooseFile">Tap to Take a Photo</button>
+                    <div class="HiddenFile">
+                        <input type="file" data-clear-btn="false" name="image" accept="image/*" capture>
+                    </div>
+                    <div id="PreviewImage">
+</div>
+                    <script>
+    $('#MainPageView').on('pageinit', function(){
+		$("#ChooseFile").click(function(e){
+			e.preventDefault();
+			$("input[type=file]").trigger("click");
+		});
+		$("input[type=file]").change(function(){
+			var file = $("input[type=file]")[0].files[0];            
+			$("#PreviewImage").empty();
+			displayAsImage(file, "PreviewImage");
+		});
+    });
+
+    function displayAsImage(file, containerid) {
+		if (typeof FileReader !== "undefined") {
+			var container = document.getElementById(containerid),
+			    img = document.createElement("img"),
+			    reader;
+			container.appendChild(img);
+			reader = new FileReader();
+			reader.onload = (function (theImg) {
+				return function (evt) {
+					theImg.src = evt.target.result;
+				};
+			}(img));
+			reader.readAsDataURL(file);
+		}
+	}
+    </script>
+                    <label for="SignButton">Sign the Observation:</label>
+                    <a href="#SignaturePageView" name="SignButton" data-role="button" data-transition="pop">Tap to Sign</a>
+                    <hr>
+                    <div class="ui-field-contain full-width-slider">
+                        <div id="RatingSlider" class="RatingSlider">
+                            <label for="ScoreSlider">How would you rate this?:</label>
+                            <input type="range" style="display:none" data-show-value="true" data-popup-enabled="true" name="ScoreSlider" id="ScoreSlider" min="0" max="5" value="0"/>
+                        </div>
+                    </div>
+                    <fieldset class="ui-field-contain">
+                        <label for="CausesOfObservations">Select a cause:</label>
+                        <select name="CausesOfObservations" id="CausesOfObservations">
+                            <option value="UnSafeAct">Unsafe Act</option>
+                            <option value="UnSafeCond">Unsafe Condition</option>
+                            <option value="UnSure">Unsure</option>
+                        </select>
+                    </fieldset>
+                    <fieldset class="ui-field-contain">
+                        <label for="TypesOfObservations">Select a type:</label>
+                        <select name="TypesOfObservations" id="types">
+                            <option value="Caught">Caught in, On, or Between</option>
+                            <option value="Electrical">Electrical</option>
+                            <option value="Environmental">Environmental</option>
+                            <option value="Equipment">Equipment Related</option>
+                            <option value="Fall">Fall/Slip/Trip</option>
+                            <option value="Overexertion">Overexertion</option>
+                            <option value="Struck">Struck By/Struck Against</option>
+                        </select>
+                    </fieldset>
+                </form>
+            </div>
+            <div data-role="footer" style="text-align:center;">
+                <a href="#" class="ui-btn ui-icon-mail ui-btn-icon-left">Send Observation</a>
+            </div>
+        </div>         
+        <div data-role="page" id="ProfilePageView">
+            <div data-role="header">
+                <h1>Edit Profile</h1>
+            </div>
+            <div data-role="main" class="ui-content">
+                <form method="post" action="">
+                    <label for="FirstName">First name:</label>
+                    <input type="text" name="FirstName" id="FirstName">
+                    <label for="LastName">Last name:</label>
+                    <input type="text" name="LastName" id="LastName">
+                    <label for="EmailAddress">Email Address:</label>
+                    <input type="email" name="EmailAddress" id="EmailAddress">
+                </form>
+                <a href="#MainPageView" data-role="button" data-transition="flip" data-direction="reverse">Save Changes</a>
+            </div>
+        </div>
+        <div data-role="page" id="JobListView">
+            <div data-role="header">
+                <h1>Select a Job From the List</h1>
+            </div>
+            <div data-role="main" class="ui-content">
+                <form class="ui-filterable">
+                    <input id="JobList" data-type="search">
+                </form>
+                <ui data-role="listview" data-filter="true" data-input="#JobList">
+                    <li>
+                        <a href="#"><h2>05-29HS</h2><p>Hanbury Street Project</p></a>
+                    </li>
+                    <li>
+                        <a href="#"><h2>09-1182</h2><p>Pearland Job</p></a>
+                    </li>
+                    <li>
+                        <a href="#"><h2>1219</h2><p>Big 4 Bridge Phase II</p></a>
+                    </li>
+                    <li>
+                        <a href="#"><h2>1234</h2><p>Test Job</p></a>
+                    </li>
+                    <li>
+                        <a href="#"><h2>12-9872</h2><p>Fresno Job</p></a>
+                    </li>
+                    <li>
+                        <a href="#"><h2>1323</h2><p>River Ridge Center 5</p></a>
+                    </li>
+                    <li>
+                        <a href="#"><h2>1327</h2><p>Sheppard Square Sitework-Blk A,C,D</p></a>
+                    </li>
+                    <li>
+                        <a href="#"><h2>1342</h2><p>Highway 146 Widening - Ralcorp</p></a>
+                    </li>
+                    <li>
+                        <a href="#"><h2>1347</h2><p>LRZ-Minors Lane Elem Access Road</p></a>
+                    </li>
+                </ui>
+            </div>
+        </div>
+        <div data-role="page" id="SignaturePageView">
+            <div data-role="header" data-position="fixed">
+                <h1>Sign the Observation</h1>
+            </div>
+            <div data-role="main" class="ui-content">
+                <canvas id="CanvasSketch" width="600" height="600"></canvas>
+                <script type="text/javascript">
+                    // Sketch onto the canvas
+                    $(function() {
+                    	$.each(['#f00', '#ff0', '#0f0', '#0ff', '#00f', '#f0f', '#000', '#fff'], function() {
+                    	$('#colors_demo .tools').append("<a href='#CanvasSketch' data-color='" + this + "' style='width: 10px; background: " + this + ";'></a> ");
+                    });
+                    $.each([3, 5, 10, 15], function() {
+                    	$('#colors_demo .tools').append("<a href='#CanvasSketch' data-size='" + this + "' style='background: #ccc'>" + this + "</a> ");
+                    });
+                    $('#CanvasSketch').sketch();
+              });
+            </script>
+            </div>
+            <div data-role="footer" style="text-align:center;" data-position="fixed">
+                <div class="tools">
+                    <a href="#CanvasSketch" data-download="png" class="ui-btn ui-icon-check ui-btn-icon-left" style="float: center; width: 125px;">Accept Signature</a>
+                </div>
+            </div>             
+        </div>         
+    </body>
